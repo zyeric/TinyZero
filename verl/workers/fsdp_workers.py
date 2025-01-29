@@ -512,6 +512,7 @@ class CriticWorker(Worker):
         if not torch.distributed.is_initialized():
             torch.distributed.init_process_group(backend="nccl")
         self.config = config
+        torch.cuda.set_device(torch.distributed.get_rank())
 
         # build device mesh for Ulysses Sequence Parallel
         world_size = torch.distributed.get_world_size()
@@ -619,6 +620,7 @@ class CriticWorker(Worker):
 
         log_gpu_memory_usage('Before critic FSDP', logger=None)
 
+        print('>>>', torch.distributed.get_rank(), torch.cuda.current_device())
         critic_module = FSDP(critic_module,
                              param_init_fn=init_fn,
                              use_orig_params=False,

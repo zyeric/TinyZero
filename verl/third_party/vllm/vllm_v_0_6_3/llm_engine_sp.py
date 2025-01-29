@@ -97,6 +97,7 @@ class LLMEngine(LLMEngine):
         # NOTE(sgm): first two arguments are added for verl
         model: Union[nn.Module, Dict],  # model itself or its parameter dict
         tokenizer: nn.Module,
+        vllm_config, # for v0.6.5
         # NOTE(sgm): vllm original arguments
         model_config: ModelConfig,
         cache_config: CacheConfig,
@@ -142,8 +143,8 @@ class LLMEngine(LLMEngine):
             model_config.tokenizer_mode,
             model_config.revision,
             model_config.override_neuron_config,
-            model_config.rope_scaling,
-            model_config.rope_theta,
+            # model_config.rope_scaling,
+            # model_config.rope_theta,
             model_config.tokenizer_revision,
             model_config.trust_remote_code,
             model_config.dtype,
@@ -156,13 +157,13 @@ class LLMEngine(LLMEngine):
             model_config.quantization,
             model_config.enforce_eager,
             cache_config.cache_dtype,
-            model_config.quantization_param_path,
+            # model_config.quantization_param_path,
             device_config.device,
             decoding_config,
             observability_config,
             model_config.seed,
             model_config.served_model_name,
-            scheduler_config.use_v2_block_manager,
+            # scheduler_config.use_v2_block_manager,
             scheduler_config.num_scheduler_steps,
             scheduler_config.chunked_prefill_enabled,
             scheduler_config.multi_step_stream_outputs,
@@ -171,6 +172,7 @@ class LLMEngine(LLMEngine):
             use_cached_outputs,
             model_config.mm_processor_kwargs,
         )
+        self.vllm_config = vllm_config
         # TODO(woosuk): Print more configs in debug mode.
         self.model_config = model_config
         self.cache_config = cache_config
@@ -211,6 +213,7 @@ class LLMEngine(LLMEngine):
 
         self.model_executor = executor_class(
             model=model,  # add for spmd_gpu_executor
+            vllm_config=vllm_config,
             model_config=model_config,
             cache_config=cache_config,
             parallel_config=parallel_config,
@@ -393,7 +396,18 @@ class LLMEngine(LLMEngine):
         engine = cls(
             model,
             tokenizer,
-            **engine_config.to_dict(),
+            engine_config,
+            model_config=engine_config.model_config,
+            cache_config=engine_config.cache_config,
+            parallel_config=engine_config.parallel_config,
+            scheduler_config=engine_config.scheduler_config,
+            device_config=engine_config.device_config,
+            load_config=engine_config.load_config,
+            lora_config=engine_config.lora_config,
+            speculative_config=engine_config.speculative_config,
+            decoding_config=engine_config.decoding_config,
+            observability_config=engine_config.observability_config,
+            prompt_adapter_config=engine_config.prompt_adapter_config,
             executor_class=executor_class,
             log_stats=not engine_args.disable_log_stats,
             usage_context=usage_context,

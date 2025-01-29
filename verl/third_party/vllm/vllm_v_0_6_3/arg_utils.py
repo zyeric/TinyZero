@@ -44,9 +44,9 @@ class EngineArgs(EngineArgs):
             tokenizer_revision=self.tokenizer_revision,
             max_model_len=self.max_model_len,
             quantization=self.quantization,
-            quantization_param_path=self.quantization_param_path,
+            # quantization_param_path=self.quantization_param_path,
             enforce_eager=self.enforce_eager,
-            max_context_len_to_capture=self.max_context_len_to_capture,
+            # max_context_len_to_capture=self.max_context_len_to_capture,
             max_seq_len_to_capture=self.max_seq_len_to_capture,
             max_logprobs=self.max_logprobs,
             disable_sliding_window=self.disable_sliding_window,
@@ -68,6 +68,7 @@ class EngineArgs(EngineArgs):
         )
 
     def create_engine_config(self) -> EngineConfig:
+        self.max_num_seqs = 256
         engine_config = super().create_engine_config()
 
         # NOTE[VERL]: Use the world_size set by torchrun

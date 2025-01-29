@@ -36,7 +36,7 @@ from vllm.model_executor import set_random_seed
 from vllm.model_executor.layers.sampler import SamplerOutput
 from vllm.sequence import ExecuteModelRequest, IntermediateTensors
 from vllm.worker.cache_engine import CacheEngine
-from vllm.worker.embedding_model_runner import EmbeddingModelRunner
+# from vllm.worker.embedding_model_runner import EmbeddingModelRunner
 from vllm.worker.model_runner import GPUModelRunnerBase
 from vllm.worker.model_runner_base import ModelRunnerInputBase
 from vllm.worker.worker import Worker, _check_if_gpu_supports_dtype
@@ -61,6 +61,7 @@ class Worker(Worker):
     def __init__(
         self,
         model: Union[nn.Module, Dict],  # model itself or its parameter dict
+        vllm_config,
         model_config: ModelConfig,
         parallel_config: ParallelConfig,
         scheduler_config: SchedulerConfig,
@@ -77,6 +78,7 @@ class Worker(Worker):
         model_runner_cls: Optional[Type[GPUModelRunnerBase]] = None,
     ) -> None:
         # self.model = model  # will be replaced in the init_model
+        self.vllm_config = vllm_config
         self.model_config = model_config
         self.parallel_config = parallel_config
         self.parallel_config.rank = rank
@@ -111,17 +113,11 @@ class Worker(Worker):
         ModelRunnerClass: Type[GPUModelRunnerBase] = ModelRunner
         if model_runner_cls is not None:
             ModelRunnerClass = model_runner_cls
-        elif self.model_config.embedding_mode:
-            ModelRunnerClass = EmbeddingModelRunner
+        # elif self.model_config.embedding_mode:
+        #     ModelRunnerClass = EmbeddingModelRunner
         self.model_runner: GPUModelRunnerBase = ModelRunnerClass(
             model,  # [VERL]: add for verl
-            model_config,
-            parallel_config,
-            scheduler_config,
-            device_config,
-            cache_config,
-            load_config=load_config,
-            lora_config=self.lora_config,
+            self.vllm_config,
             kv_cache_dtype=self.cache_config.cache_dtype,
             is_driver_worker=is_driver_worker,
             prompt_adapter_config=prompt_adapter_config,

@@ -45,6 +45,7 @@ class SPMDGPUExecutor(ExecutorBase):
     def __init__(
         self,
         model,  # pytorch model itself or its parameter dict
+        vllm_config,
         model_config: ModelConfig,
         cache_config: CacheConfig,
         parallel_config: ParallelConfig,
@@ -56,6 +57,7 @@ class SPMDGPUExecutor(ExecutorBase):
         prompt_adapter_config: Optional[PromptAdapterConfig],
         observability_config: Optional[ObservabilityConfig],
     ) -> None:
+        self.vllm_config = vllm_config
         self.model_config = model_config
         self.cache_config = cache_config
         self.lora_config = lora_config
@@ -91,6 +93,7 @@ class SPMDGPUExecutor(ExecutorBase):
 
         self.worker = Worker(
             model,
+            self.vllm_config,
             self.model_config,
             self.parallel_config,
             self.scheduler_config,

@@ -20,7 +20,7 @@ from typing import Dict, Optional, Union
 import torch
 import torch.nn as nn
 import vllm.envs as envs
-from vllm.compilation.levels import CompilationLevel
+from vllm.config import CompilationLevel
 from vllm.config import (
     CacheConfig,
     DeviceConfig,
@@ -38,7 +38,9 @@ from vllm.lora.worker_manager import LRUCacheWorkerLoRAManager
 from vllm.model_executor.models.interfaces import supports_lora
 from vllm.multimodal import MULTIMODAL_REGISTRY, MultiModalRegistry
 from vllm.prompt_adapter.worker_manager import LRUCacheWorkerPromptAdapterManager
-from vllm.utils import DeviceMemoryProfiler, is_hip, supports_dynamo
+# from vllm.utils import DeviceMemoryProfiler, supports_dynamo
+from vllm.utils import DeviceMemoryProfiler
+from vllm.utils import is_hipScopedMarker_available as is_hip
 from vllm.worker.model_runner import ModelRunner
 
 from .config import LoadConfig, ModelConfig
@@ -87,12 +89,12 @@ class ModelRunner(ModelRunner):
             load_config,
             lora_config,
             kv_cache_dtype,
-            is_driver_worker=True,  # a hack
-            prompt_adapter_config=prompt_adapter_config,
-            return_hidden_states=return_hidden_states,
-            observability_config=observability_config,
-            input_registry=input_registry,
-            mm_registry=mm_registry,
+            True,  # a hack
+            # prompt_adapter_config=prompt_adapter_config,
+            return_hidden_states,
+            # observability_config=observability_config,
+            input_registry,
+            mm_registry,
         )
 
         # NOTE(sgm): add for verl
